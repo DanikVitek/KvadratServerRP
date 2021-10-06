@@ -1,0 +1,30 @@
+name: ServerRP
+version: '${project.version}'
+main: com.danikvitek.serverrp.Main
+api-version: 1.16
+authors: [ Danik_Vitek ]
+description: Allows to set a single resourse pack through all your servers using database
+
+commands:
+  resoursepack:
+    aliases:
+      - rp
+    description: Set or get the resourse pack of the server
+    usage: "/resoursepack <upload <url> | get | link>"
+
+permissions:
+  serverrp.command.resoursepack.*:
+    default: op
+    children:
+      - serverrp.command.resoursepack.upload
+      - serverrp.command.resoursepack.get
+      - serverrp.command.resoursepack.link
+  serverrp.command.resoursepack.upload:
+    default: op
+    description: Set the resourse pack of the server
+  serverrp.command.resoursepack.get:
+    default: true
+    description: Get the resourse pack of the server
+  serverrp.command.resoursepack.link:
+    default: true
+    description: Get the link of the resourse pack of the server

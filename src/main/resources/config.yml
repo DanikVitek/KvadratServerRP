@@ -1,0 +1,6 @@
+database:
+  host: localhost
+  port: 3306
+  name: resource_pack_db
+  login: root
+  password: ""

@@ -10,14 +10,18 @@ import org.jetbrains.annotations.Nullable;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiFunction;
 
 public final class Main extends JavaPlugin {
 
     private static DataSource dataSource;
-    public static final String linkTable = "history_links";
+    public static final String linkTable = "rp_link";
     private static String dataBaseName;
 
     public static String getDataBaseName() {
@@ -29,7 +33,7 @@ public final class Main extends JavaPlugin {
         getConfig().options().copyDefaults();
         saveDefaultConfig();
 
-        getConfig().getString("database.name");
+        dataBaseName = getConfig().getString("database.name");
 
         // Database
         MysqlConnectionPoolDataSource mcpDataSource = new MysqlConnectionPoolDataSource();
@@ -45,7 +49,9 @@ public final class Main extends JavaPlugin {
         }
         createRPTable();
 
-        getCommand("resourcepack").setExecutor(new ResourcePackCommand());
+        ResourcePackCommand rpCommand = new ResourcePackCommand();
+        Objects.requireNonNull(getCommand("resourcepack")).setExecutor(rpCommand);
+        Bukkit.getPluginManager().registerEvents(rpCommand, this);
     }
 
     private static @Nullable Connection getConnection() {
@@ -103,9 +109,30 @@ public final class Main extends JavaPlugin {
         return true;
     }
 
+    public static @Nullable <T> T makeExecuteQuery(@NotNull String query, @Nullable HashMap<Integer, ?> values, @Nullable BiFunction<List<?>, ResultSet, T> function, @Nullable List<?> args) {
+        Connection conn = getConnection();
+        T result = null;
+        if (conn != null) {
+            try {
+                PreparedStatement ps = conn.prepareStatement(query);
+                if (values != null)
+                    for (Map.Entry<Integer, ?> value: values.entrySet())
+                        ps.setObject(value.getKey(), value.getValue());
+                ResultSet rs = ps.executeQuery();
+                if (function != null)
+                    result = function.apply(args, rs);
+                conn.close();
+            } catch (SQLException e) {
+                Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "QUERY: " + query);
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
     private void createRPTable() {
         String createTableQuery =
-                "create table if not exists `" + linkTable + "`.`" + dataBaseName + "`(" +
+                "create table if not exists `" + dataBaseName + "`.`" + linkTable + "`(" +
                         "sha1 binary(20) not null unique," +
                         "link varchar(256) not null unique," +
                         "primary key (sha1)" +

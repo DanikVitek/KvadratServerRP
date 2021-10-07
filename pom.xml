@@ -11,7 +11,7 @@
 
     <name>ServerRP</name>
 
-    <description>Allows to set a single resourse pack through all your servers using database</description>
+    <description>Allows to set a single resource pack through all your servers using database</description>
     <properties>
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
